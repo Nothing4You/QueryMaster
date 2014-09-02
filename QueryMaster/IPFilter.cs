@@ -11,7 +11,7 @@ namespace QueryMaster
     public class IpFilter
     {
         /// <summary>
-        /// Servers running dedicated 
+        /// Server type
         /// </summary>
         public bool IsDedicated { get; set; }
         /// <summary>
