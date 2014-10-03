@@ -122,11 +122,11 @@ namespace QueryMaster
             {
                 byte edf = parser.ReadByte();
                 if ((edf & 0x80) > 0)
-                    parser.ReadShort();
+                    server.Extra = "ServerPort="+parser.ReadShort();
                 if ((edf & 0x10) > 0)
                     server.Extra = "SteamID=" + parser.ReadInt();
                 if ((edf & 0x40) > 0)
-                    server.Extra = "Port=" + parser.ReadShort() + ";Name=" + parser.ReadString();
+                    server.Extra = "Port=" + parser.ReadShort() + "Name=" + parser.ReadString();
                 if ((edf & 0x20) > 0)
                     server.Extra = "Keywords=" + parser.ReadString();
                 if ((edf & 0x10) > 0)
@@ -134,7 +134,7 @@ namespace QueryMaster
             }
             catch (ParseException)
             {
-                server.Extra = "";
+                server.Extra = string.Empty;
             }
             server.Address = socket.Address.Address + ":" + socket.Address.Port;
             server.Ping = Latency;
