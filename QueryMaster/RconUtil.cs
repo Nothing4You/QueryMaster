@@ -29,8 +29,11 @@ namespace QueryMaster
             packet.Size = parser.ReadInt();
             packet.Id = parser.ReadInt();
             packet.Type = parser.ReadInt();
-            string s = Util.BytesToString(parser.GetUnParsedData());
-            packet.Body = s.EndsWith("\0\0", StringComparison.Ordinal) ? s.Remove(s.Length - 3) : s;
+            byte[] body = parser.GetUnParsedData();
+            if (body.Length == 2)
+                packet.Body = string.Empty;
+            else
+                packet.Body = Encoding.UTF8.GetString(body, 0, body.Length - 3);
             return packet;
         }
     }
