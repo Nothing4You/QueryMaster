@@ -35,7 +35,7 @@ namespace QueryMaster
             StringBuilder str = new StringBuilder();
             for (int i = 0; i < recvData.Count; i++)
             {
-                //consecutive rcon command replies start with an empty packet
+                //consecutive rcon command replies start with an empty packet 
                 if (BitConverter.ToInt32(recvData[i], 4) == (int)PacketId.Empty)
                     continue;
                 if (recvData[i].Length - BitConverter.ToInt32(recvData[i], 0) == 4)

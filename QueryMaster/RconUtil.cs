@@ -33,7 +33,7 @@ namespace QueryMaster
             if (body.Length == 2)
                 packet.Body = string.Empty;
             else
-                packet.Body = Encoding.UTF8.GetString(body, 0, body.Length - 3);
+                packet.Body = Encoding.UTF8.GetString(body, 0, body.Length - 3); 
             return packet;
         }
     }
