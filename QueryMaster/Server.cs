@@ -118,24 +118,17 @@ namespace QueryMaster
             }
 
             server.GameVersion = parser.ReadString();
-            try
-            {
-                byte edf = parser.ReadByte();
-                if ((edf & 0x80) > 0)
-                    server.Extra = "ServerPort="+parser.ReadShort();
-                if ((edf & 0x10) > 0)
-                    server.Extra = "SteamID=" + parser.ReadInt();
-                if ((edf & 0x40) > 0)
-                    server.Extra = "Port=" + parser.ReadShort() + "Name=" + parser.ReadString();
-                if ((edf & 0x20) > 0)
-                    server.Extra = "Keywords=" + parser.ReadString();
-                if ((edf & 0x10) > 0)
-                    server.Extra = "GameID=" + parser.ReadInt();
-            }
-            catch (ParseException)
-            {
-                server.Extra = string.Empty;
-            }
+            byte edf = parser.ReadByte();
+            ExtraInfo info = new ExtraInfo();
+            info.Port = (edf & 0x80) > 0 ? parser.ReadShort() : (short)0;
+            info.SteamID = (edf & 0x10) > 0 ? parser.ReadInt() : 0;
+            if ((edf & 0x40) > 0)
+                info.SpecInfo = new SourceTVInfo() { Port = parser.ReadShort(), Name = parser.ReadString() };
+            info.Keywords = (edf & 0x20) > 0 ? parser.ReadString() : string.Empty;
+            info.GameId = (edf & 0x10) > 0 ? parser.ReadInt() : 0;
+            server.Extra = info;
+            server.Address = socket.Address.Address + ":" + socket.Address.Port;
+            server.Ping = Latency;
             server.Address = socket.Address.Address + ":" + socket.Address.Port;
             server.Ping = Latency;
             return server;
