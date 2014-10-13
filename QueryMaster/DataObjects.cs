@@ -83,7 +83,7 @@ namespace QueryMaster
         /// <summary>
         /// Additional information provided by server
         /// </summary>
-        public string Extra { get; internal set; }
+        public ExtraInfo Extra { get; internal set; }
         /// <summary>
         /// Valid only if the server is running The Ship. 
         /// </summary>
@@ -214,6 +214,22 @@ namespace QueryMaster
         /// Player's Team Name
         /// </summary>
         public string Team { get; internal set; }
+    }
+
+    [Serializable]
+    public class ExtraInfo
+    {
+        public short Port { get; internal set; }
+        public int SteamID { get; internal set; }
+        public SourceTVInfo SpecInfo { get; internal set; }
+        public string Keywords { get; internal set; }
+        public int GameId { get; internal set; }
+    }
+    [Serializable]
+    public class SourceTVInfo
+    {
+        public short Port { get; internal set; }
+        public string Name { get; internal set; }
     }
 
 
