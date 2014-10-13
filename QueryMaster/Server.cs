@@ -345,7 +345,6 @@ namespace QueryMaster
         /// Gets Round-trip delay time
         /// </summary>
         /// <returns>Elapsed milliseconds</returns>
-        /// <remarks>It uses A2A_PING message which is not supported by all servers.use GetInfo() instead</remarks>
         /// 
         public long Ping()
         {

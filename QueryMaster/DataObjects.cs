@@ -81,7 +81,7 @@ namespace QueryMaster
         /// </summary>
         public long Ping { get; internal set; }
         /// <summary>
-        /// Additional information provided by server
+        /// Additional information provided by server.
         /// </summary>
         public ExtraInfo Extra { get; internal set; }
         /// <summary>
@@ -216,19 +216,46 @@ namespace QueryMaster
         public string Team { get; internal set; }
     }
 
+    /// <summary>
+    /// Contains extra information about server
+    /// </summary>
     [Serializable]
     public class ExtraInfo
     {
+        /// <summary>
+        /// The server's game port number.
+        /// </summary>
         public short Port { get; internal set; }
+        /// <summary>
+        /// Server's SteamID. 
+        /// </summary>
         public int SteamID { get; internal set; }
+        /// <summary>
+        /// Contains information on Source TV.(if it is Source TV)
+        /// </summary>
         public SourceTVInfo SpecInfo { get; internal set; }
+        /// <summary>
+        /// Tags that describe the game according to the server. 
+        /// </summary>
         public string Keywords { get; internal set; }
+        /// <summary>
+        /// The server's 64-bit GameID.
+        /// </summary>
         public int GameId { get; internal set; }
     }
+    /// <summary>
+    /// Contains information on SourceTV
+    /// </summary>
     [Serializable]
     public class SourceTVInfo
     {
+        /// <summary>
+        /// Spectator port number for SourceTV.
+        /// </summary>
         public short Port { get; internal set; }
+        /// <summary>
+        /// Name of the spectator server for SourceTV.
+        /// </summary>
         public string Name { get; internal set; }
     }
 
