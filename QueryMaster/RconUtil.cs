@@ -25,15 +25,23 @@ namespace QueryMaster
         internal static RconSrcPacket ProcessPacket(byte[] data)
         {
             RconSrcPacket packet = new RconSrcPacket();
-            Parser parser = new Parser(data);
-            packet.Size = parser.ReadInt();
-            packet.Id = parser.ReadInt();
-            packet.Type = parser.ReadInt();
-            byte[] body = parser.GetUnParsedData();
-            if (body.Length == 2)
-                packet.Body = string.Empty;
-            else
-                packet.Body = Encoding.UTF8.GetString(body, 0, body.Length - 3); 
+            try
+            {
+                Parser parser = new Parser(data);
+                packet.Size = parser.ReadInt();
+                packet.Id = parser.ReadInt();
+                packet.Type = parser.ReadInt();
+                byte[] body = parser.GetUnParsedData();
+                if (body.Length == 2)
+                    packet.Body = string.Empty;
+                else
+                    packet.Body = Encoding.UTF8.GetString(body, 0, body.Length - 3);
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", data);
+                throw;
+            }
             return packet;
         }
     }

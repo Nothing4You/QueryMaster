@@ -70,11 +70,19 @@ namespace QueryMaster
             recvData = socket.GetResponse(Query, Type);
             sw.Stop();
             Latency = sw.ElapsedMilliseconds;
-            switch (recvData[0])
+            try
             {
-                case 0x49: return Current(recvData);
-                case 0x6D: return Obsolete(recvData);
-                default: throw new InvalidHeaderException("packet header is not valid");
+                switch (recvData[0])
+                {
+                    case 0x49: return Current(recvData);
+                    case 0x6D: return Obsolete(recvData);
+                    default: throw new InvalidHeaderException("packet header is not valid");
+                }
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData);
+                throw;
             }
 
         }
@@ -178,39 +186,48 @@ namespace QueryMaster
         public virtual ReadOnlyCollection<Player> GetPlayers()
         {
             byte[] recvData = null;
-            if (IsObsolete)
-            {
-                recvData = socket.GetResponse(QueryMsg.ObsoletePlayerQuery, Type);
-            }
-            else
-            {
-                if (PlayerChallengeId == null)
+
+                if (IsObsolete)
                 {
-                    recvData = GetPlayerChallengeId();
-                    if (IsPlayerChallengeId)
-                        PlayerChallengeId = recvData;
+                    recvData = socket.GetResponse(QueryMsg.ObsoletePlayerQuery, Type);
                 }
-                if (IsPlayerChallengeId)
-                    recvData = socket.GetResponse(Util.MergeByteArrays(QueryMsg.PlayerQuery, PlayerChallengeId), Type);
-            }
-            Parser parser = new Parser(recvData);
-            if (parser.ReadByte() != (byte)ResponseMsgHeader.A2S_PLAYER)
-                throw new InvalidHeaderException("A2S_PLAYER message header is not valid");
-            int playerCount = parser.ReadByte();
-            List<Player> players = new List<Player>(playerCount);
-            for (int i = 0; i < playerCount; i++)
-            {
-                parser.ReadByte();//index,always equal to 0
-                players.Add(new Player()
+                else
                 {
-                    Name = parser.ReadString(),
-                    Score = parser.ReadInt(),
-                    Time = TimeSpan.FromSeconds(parser.ReadFloat())
-                });
+                    if (PlayerChallengeId == null)
+                    {
+                        recvData = GetPlayerChallengeId();
+                        if (IsPlayerChallengeId)
+                            PlayerChallengeId = recvData;
+                    }
+                    if (IsPlayerChallengeId)
+                        recvData = socket.GetResponse(Util.MergeByteArrays(QueryMsg.PlayerQuery, PlayerChallengeId), Type);
+                }
+            try
+            {
+                Parser parser = new Parser(recvData);
+                if (parser.ReadByte() != (byte)ResponseMsgHeader.A2S_PLAYER)
+                    throw new InvalidHeaderException("A2S_PLAYER message header is not valid");
+                int playerCount = parser.ReadByte();
+                List<Player> players = new List<Player>(playerCount);
+                for (int i = 0; i < playerCount; i++)
+                {
+                    parser.ReadByte();//index,always equal to 0
+                    players.Add(new Player()
+                    {
+                        Name = parser.ReadString(),
+                        Score = parser.ReadInt(),
+                        Time = TimeSpan.FromSeconds(parser.ReadFloat())
+                    });
+                }
+                if (playerCount == 1 && players[0].Name == "Max Players")
+                    return null;
+                return players.AsReadOnly();
             }
-            if (playerCount == 1 && players[0].Name == "Max Players")
-                return null;
-            return players.AsReadOnly();
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData);
+                throw;
+            }
         }
         /// <summary>
         /// Retrieves  server rules
@@ -234,17 +251,25 @@ namespace QueryMaster
                 if (IsRuleChallengeId)
                     recvData = socket.GetResponse(Util.MergeByteArrays(QueryMsg.RuleQuery, RuleChallengeId), Type);
             }
-            Parser parser = new Parser(recvData);
-            if (parser.ReadByte() != (byte)ResponseMsgHeader.A2S_RULES)
-                throw new InvalidHeaderException("A2S_RULES message header is not valid");
-
-            int count = parser.ReadShort();//number of rules
-            List<Rule> rules = new List<Rule>(count);
-            for (int i = 0; i < count; i++)
+            try
             {
-                rules.Add(new Rule() { Name = parser.ReadString(), Value = parser.ReadString() });
+                Parser parser = new Parser(recvData);
+                if (parser.ReadByte() != (byte)ResponseMsgHeader.A2S_RULES)
+                    throw new InvalidHeaderException("A2S_RULES message header is not valid");
+
+                int count = parser.ReadShort();//number of rules
+                List<Rule> rules = new List<Rule>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    rules.Add(new Rule() { Name = parser.ReadString(), Value = parser.ReadString() });
+                }
+                return rules.AsReadOnly();
             }
-            return rules.AsReadOnly();
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData);
+                throw;
+            }
         }
 
         private byte[] GetPlayerChallengeId()
@@ -253,13 +278,21 @@ namespace QueryMaster
             byte header = 0;
             Parser parser = null;
             recvBytes = socket.GetResponse(QueryMsg.PlayerChallengeQuery, Type);
-            parser = new Parser(recvBytes);
-            header = parser.ReadByte();
-            switch (header)
+            try
             {
-                case (byte)ResponseMsgHeader.A2S_SERVERQUERY_GETCHALLENGE: IsPlayerChallengeId = true; return parser.GetUnParsedData();
-                case (byte)ResponseMsgHeader.A2S_PLAYER: IsPlayerChallengeId = false; return recvBytes;
-                default: throw new InvalidHeaderException("A2S_SERVERQUERY_GETCHALLENGE message header is not valid");
+                parser = new Parser(recvBytes);
+                header = parser.ReadByte();
+                switch (header)
+                {
+                    case (byte)ResponseMsgHeader.A2S_SERVERQUERY_GETCHALLENGE: IsPlayerChallengeId = true; return parser.GetUnParsedData();
+                    case (byte)ResponseMsgHeader.A2S_PLAYER: IsPlayerChallengeId = false; return recvBytes;
+                    default: throw new InvalidHeaderException("A2S_SERVERQUERY_GETCHALLENGE message header is not valid");
+                }
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvBytes);
+                throw;
             }
         }
 
@@ -269,15 +302,23 @@ namespace QueryMaster
             byte header = 0;
             Parser parser = null;
             recvBytes = socket.GetResponse(QueryMsg.RuleChallengeQuery, Type);
-            parser = new Parser(recvBytes);
-            header = parser.ReadByte();
-
-            switch (header)
+            try
             {
-                case (byte)ResponseMsgHeader.A2S_SERVERQUERY_GETCHALLENGE: IsRuleChallengeId = true; return BitConverter.GetBytes(parser.ReadInt());
-                case (byte)ResponseMsgHeader.A2S_RULES: IsRuleChallengeId = false; return recvBytes;
-                default: throw new InvalidHeaderException("A2S_SERVERQUERY_GETCHALLENGE message header is not valid");
+                parser = new Parser(recvBytes);
+                header = parser.ReadByte();
 
+                switch (header)
+                {
+                    case (byte)ResponseMsgHeader.A2S_SERVERQUERY_GETCHALLENGE: IsRuleChallengeId = true; return BitConverter.GetBytes(parser.ReadInt());
+                    case (byte)ResponseMsgHeader.A2S_RULES: IsRuleChallengeId = false; return recvBytes;
+                    default: throw new InvalidHeaderException("A2S_SERVERQUERY_GETCHALLENGE message header is not valid");
+
+                }
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvBytes);
+                throw;
             }
         }
 
