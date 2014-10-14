@@ -28,8 +28,7 @@ namespace QueryMaster
             {
                 return Obj;
             }
-            if (Obj.socket != null)
-                Obj.socket.Dispose();
+            Obj.socket.Dispose();
             return null;
         }
 
@@ -37,14 +36,34 @@ namespace QueryMaster
         {
             byte[] rconMsg = Util.MergeByteArrays(RconQuery, Util.StringToBytes(ChallengeId), Util.StringToBytes(" \"" + RConPass + "\" " + command));
             byte[] recvData = new byte[2000];
+            string s;
             recvData = socket.GetResponse(rconMsg, EngineType.GoldSource);
-            return Util.BytesToString(recvData).Remove(0, 1);
+            try
+            { 
+                s= Util.BytesToString(recvData).Remove(0, 1);
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData);
+                throw;
+            }
+            return s;
         }
 
         private void GetChallengeId()
         {
-            Parser parser = new Parser(socket.GetResponse(RconChIdQuery, EngineType.GoldSource));
-            ChallengeId = parser.ReadString().Split(' ')[2].Trim();
+            byte[] recvData=null;
+            try
+            {
+                recvData = socket.GetResponse(RconChIdQuery, EngineType.GoldSource);
+                Parser parser = new Parser(recvData);
+                ChallengeId = parser.ReadString().Split(' ')[2].Trim();
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData);
+                throw;
+            }
         }
 
 

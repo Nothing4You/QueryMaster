@@ -208,24 +208,27 @@ namespace QueryMaster
             {
                 return;
             }
-            ThreadPool.QueueUserWorkItem(ProcessLog, Encoding.UTF8.GetString(recvData, HeaderSize, bytesRecv - HeaderSize));
+            if(bytesRecv>HeaderSize)
+                ThreadPool.QueueUserWorkItem(ProcessLog, Encoding.UTF8.GetString(recvData, HeaderSize, bytesRecv - HeaderSize));
             UdpSocket.BeginReceive(recvData, 0, recvData.Length, SocketFlags.None, Recv, null);
         }
 
         private void ProcessLog(object line)
         {
             string logLine = (string)line;
-            string[] data = LineSplit.Split(logLine, 2);
             DateTime Timestamp;
+            string info;
             try
             {
+                string[] data = LineSplit.Split(logLine, 2);
                 Timestamp = DateTime.ParseExact(data[0], "MM/dd/yyyy - HH:mm:ss", CultureInfo.InvariantCulture);
+                info = data[1].Remove(data[1].Length - 2);
             }
-            catch (FormatException)
+            catch (Exception e)
             {
-                throw new ParseException("Error while parsing timestamp from log line");
+                e.Data.Add("ReceivedData", Util.StringToBytes(logLine));
+                throw;
             }
-            string info = data[1].Remove(data[1].Length - 2);
             if (info.StartsWith("//"))
                 return;
             if (Callback != null)

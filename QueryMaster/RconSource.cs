@@ -20,7 +20,17 @@ namespace QueryMaster
             byte[] recvData = new byte[50];
             RconSrcPacket packet = new RconSrcPacket() { Body = msg, Id = (int)PacketId.ExecCmd, Type = (int)PacketType.Auth };
             recvData = obj.socket.GetResponse(RconUtil.GetBytes(packet));
-            if (BitConverter.ToInt32(recvData, 4) != -1)
+            int header;
+            try
+            {
+                header = BitConverter.ToInt32(recvData, 4);
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData);
+                throw;
+            }
+            if (header != -1)
             {
                 return obj;
             }
@@ -33,19 +43,27 @@ namespace QueryMaster
             RconSrcPacket senPacket = new RconSrcPacket() { Body = command, Id = (int)PacketId.ExecCmd, Type = (int)PacketType.Exec };
             List<byte[]> recvData = socket.GetMultiPacketResponse(RconUtil.GetBytes(senPacket));
             StringBuilder str = new StringBuilder();
-            for (int i = 0; i < recvData.Count; i++)
+            try
             {
-                //consecutive rcon command replies start with an empty packet 
-                if (BitConverter.ToInt32(recvData[i], 4) == (int)PacketId.Empty)
-                    continue;
-                if (recvData[i].Length - BitConverter.ToInt32(recvData[i], 0) == 4)
+                for (int i = 0; i < recvData.Count; i++)
                 {
-                    str.Append(RconUtil.ProcessPacket(recvData[i]).Body);
+                    //consecutive rcon command replies start with an empty packet 
+                    if (BitConverter.ToInt32(recvData[i], 4) == (int)PacketId.Empty)
+                        continue;
+                    if (recvData[i].Length - BitConverter.ToInt32(recvData[i], 0) == 4)
+                    {
+                        str.Append(RconUtil.ProcessPacket(recvData[i]).Body);
+                    }
+                    else
+                    {
+                        str.Append(RconUtil.ProcessPacket(recvData[i]).Body + Util.BytesToString(recvData[++i].Take(recvData[i].Length - 2).ToArray()));
+                    }
                 }
-                else
-                {
-                    str.Append(RconUtil.ProcessPacket(recvData[i]).Body + Util.BytesToString(recvData[++i].Take(recvData[i].Length - 2).ToArray()));
-                }
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData.SelectMany(x => x).ToArray());
+                throw;
             }
             return str.ToString();
         }

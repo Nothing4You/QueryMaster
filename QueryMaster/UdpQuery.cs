@@ -28,13 +28,20 @@ namespace QueryMaster
             byte[] recvData;
             SendData(msg);
             recvData = ReceiveData();
-            int header = BitConverter.ToInt32(recvData, 0);
-
-            switch (header)
+            try
             {
-                case SinglePacket: return ParseSinglePkt(recvData);
-                case MultiPacket: return ParseMultiPkt(recvData);
-                default: throw new InvalidHeaderException("Protocol header is not valid");
+                int header = BitConverter.ToInt32(recvData, 0);
+                switch (header)
+                {
+                    case SinglePacket: return ParseSinglePkt(recvData);
+                    case MultiPacket: return ParseMultiPkt(recvData);
+                    default: throw new InvalidHeaderException("Protocol header is not valid");
+                }
+            }
+            catch (Exception e)
+            {
+                e.Data.Add("ReceivedData", recvData);
+                throw;
             }
         }
 
