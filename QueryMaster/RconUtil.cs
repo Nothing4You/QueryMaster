@@ -14,7 +14,7 @@ namespace QueryMaster
             y.AddRange(BitConverter.GetBytes(packet.Size));
             y.AddRange(BitConverter.GetBytes(packet.Id));
             y.AddRange(BitConverter.GetBytes(packet.Type));
-            y.AddRange(Encoding.ASCII.GetBytes(packet.Body));
+            y.AddRange(Util.StringToBytes(packet.Body));
             //part of string
             y.Add(0x00);
             //end terminater
