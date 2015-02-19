@@ -14,7 +14,7 @@ namespace QueryMaster
             y.AddRange(BitConverter.GetBytes(packet.Size));
             y.AddRange(BitConverter.GetBytes(packet.Id));
             y.AddRange(BitConverter.GetBytes(packet.Type));
-            y.AddRange(Util.StringToBytes(packet.Body));
+            y.AddRange(Encoding.ASCII.GetBytes(packet.Body));
             //part of string
             y.Add(0x00);
             //end terminater
@@ -35,7 +35,7 @@ namespace QueryMaster
                 if (body.Length == 2)
                     packet.Body = string.Empty;
                 else
-                    packet.Body = Encoding.UTF8.GetString(body, 0, body.Length - 3);
+                    packet.Body = Encoding.ASCII.GetString(body, 0, body.Length - 3);
             }
             catch (Exception e)
             {
