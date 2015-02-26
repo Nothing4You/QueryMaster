@@ -27,20 +27,26 @@ namespace QueryMaster
                 return GoldSourceGames[name];
             return 0;
         }
-        internal static string BytesToString(byte[] bytes, int index = 0, int count = -1)
+        internal static string BytesToString(byte[] bytes)
         {
-            if (count == -1)
-                return Encoding.UTF8.GetString(bytes);
-            else
-                return Encoding.UTF8.GetString(bytes, index, count);
+            return Encoding.UTF8.GetString(bytes);
         }
-        internal static byte[] StringToBytes(string str, int index = 0, int count = -1)
+
+        internal static string BytesToString(byte[] bytes, int index , int count )
         {
-            if (count == -1)
-                return Encoding.UTF8.GetBytes(str);
-            else
-                return Encoding.UTF8.GetBytes(str.ToCharArray(), index, count);
+            return Encoding.UTF8.GetString(bytes, index, count);
         }
+
+        internal static byte[] StringToBytes(string str)
+        {
+            return Encoding.UTF8.GetBytes(str);
+        }
+
+        internal static byte[] StringToBytes(string str, int index, int count)
+        {
+            return Encoding.UTF8.GetBytes(str.ToCharArray(), index, count);
+        }
+
         internal static byte[] MergeByteArrays(byte[] array1, byte[] array2)
         {
             byte[] newArray = new byte[array1.Length + array2.Length];
