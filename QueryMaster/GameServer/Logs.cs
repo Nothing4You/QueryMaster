@@ -65,6 +65,7 @@ namespace QueryMaster.GameServer
         internal Logs(EngineType type, int port, IPEndPoint serverEndPoint)
         {
             Port = port;
+            ServerEndPoint = serverEndPoint;
             recvData = new byte[BufferSize];
             switch (type)
             {
